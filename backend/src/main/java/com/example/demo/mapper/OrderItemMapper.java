@@ -13,6 +13,15 @@ import java.util.List;
 public interface OrderItemMapper extends BaseMapper<OrderItem> {
 
     @Select("""
+            SELECT COUNT(1)
+            FROM order_item oi
+            INNER JOIN snack s ON oi.snack_id = s.id
+            WHERE oi.order_id = #{orderId}
+              AND s.seller_id = #{sellerId}
+            """)
+    int countSellerItemsInOrder(@Param("orderId") Long orderId, @Param("sellerId") Long sellerId);
+
+    @Select("""
             SELECT
                 o.id AS orderId,
                 o.buyer_id AS buyerId,

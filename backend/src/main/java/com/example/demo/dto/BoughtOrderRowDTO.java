@@ -16,6 +16,8 @@ public class BoughtOrderRowDTO {
     private Integer quantity;
     private BigDecimal price;
     private BigDecimal subtotal;
+    private Long sellerId;
+    private String sellerUsername;
 
     public Long getOrderId() {
         return orderId;
@@ -103,5 +105,21 @@ public class BoughtOrderRowDTO {
 
     public void setSubtotal(BigDecimal subtotal) {
         this.subtotal = subtotal;
+    }
+
+    public Long getSellerId() {
+        return sellerId;
+    }
+
+    public void setSellerId(Long sellerId) {
+        this.sellerId = sellerId;
+    }
+
+    public String getSellerUsername() {
+        return sellerUsername;
+    }
+
+    public void setSellerUsername(String sellerUsername) {
+        this.sellerUsername = sellerUsername;
     }
 }

@@ -59,3 +59,25 @@ subtotal DECIMAL(10,2) NOT NULL COMMENT '小计金额',
 FOREIGN KEY (order_id) REFERENCES orders(id),
 FOREIGN KEY (snack_id) REFERENCES snack(id)
 );
+
+CREATE TABLE chat_session (
+id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '会话ID',
+order_id BIGINT NOT NULL COMMENT '订单ID',
+buyer_id BIGINT NOT NULL COMMENT '买家ID',
+seller_id BIGINT NOT NULL COMMENT '卖家ID',
+create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+UNIQUE KEY uk_order_buyer_seller (order_id, buyer_id, seller_id),
+FOREIGN KEY (order_id) REFERENCES orders(id),
+FOREIGN KEY (buyer_id) REFERENCES user(id),
+FOREIGN KEY (seller_id) REFERENCES user(id)
+) COMMENT='聊天会话表';
+
+CREATE TABLE chat_message (
+id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '消息ID',
+session_id BIGINT NOT NULL COMMENT '会话ID',
+sender_id BIGINT NOT NULL COMMENT '发送者ID',
+content VARCHAR(1000) NOT NULL COMMENT '消息内容',
+create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '发送时间',
+FOREIGN KEY (session_id) REFERENCES chat_session(id),
+FOREIGN KEY (sender_id) REFERENCES user(id)
+) COMMENT='聊天消息表';

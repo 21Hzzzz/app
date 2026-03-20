@@ -7,6 +7,8 @@ type BoughtOrderItem = {
   quantity: number;
   price: number | string;
   subtotal: number | string;
+  sellerId: number;
+  sellerUsername?: string | null;
 };
 
 type BoughtOrder = {
@@ -23,12 +25,25 @@ type ApiResponse<T> = {
   data: T;
 };
 
+type CreateChatSessionRequest = {
+  orderId: number;
+  buyerId: number;
+  sellerId: number;
+};
+
+type CreateChatSessionResult = {
+  sessionId: number;
+};
+
 const api = useApi();
 const { user } = useAuth();
 
 const loading = ref(false);
 const loadError = ref("");
 const orders = ref<BoughtOrder[]>([]);
+
+const chatError = ref("");
+const chatLoadingMap = ref<Record<string, boolean>>({});
 
 function getDefaultImage(id: number) {
   return `https://picsum.photos/seed/bought-${id}/240/160`;
@@ -50,6 +65,21 @@ function formatTime(time: string) {
   return d.toLocaleString("zh-CN", {
     hour12: false,
   });
+}
+
+function getChatKey(orderId: number, itemId: number) {
+  return `${orderId}-${itemId}`;
+}
+
+function isChatLoading(orderId: number, itemId: number) {
+  return !!chatLoadingMap.value[getChatKey(orderId, itemId)];
+}
+
+function setChatLoading(orderId: number, itemId: number, value: boolean) {
+  chatLoadingMap.value = {
+    ...chatLoadingMap.value,
+    [getChatKey(orderId, itemId)]: value,
+  };
 }
 
 async function fetchBoughtOrders() {
@@ -81,6 +111,7 @@ async function fetchBoughtOrders() {
         ...item,
         price: Number(item.price),
         subtotal: Number(item.subtotal),
+        sellerId: Number(item.sellerId),
       })),
     }));
   } catch (error) {
@@ -89,6 +120,52 @@ async function fetchBoughtOrders() {
       error instanceof Error ? error.message : "获取购买记录失败";
   } finally {
     loading.value = false;
+  }
+}
+
+async function startChat(order: BoughtOrder, item: BoughtOrderItem) {
+  if (!user.value) {
+    await navigateTo("/login");
+    return;
+  }
+
+  if (!item.sellerId) {
+    chatError.value = "当前零食缺少卖家信息，无法发起聊天";
+    return;
+  }
+
+  const keyOrderId = order.id;
+  const keyItemId = item.id;
+
+  if (isChatLoading(keyOrderId, keyItemId)) return;
+
+  chatError.value = "";
+  setChatLoading(keyOrderId, keyItemId, true);
+
+  try {
+    const payload: CreateChatSessionRequest = {
+      orderId: order.id,
+      buyerId: user.value.id,
+      sellerId: item.sellerId,
+    };
+
+    const res = await api<ApiResponse<CreateChatSessionResult>>(
+      "/api/chat/sessions",
+      {
+        method: "POST",
+        body: payload,
+      },
+    );
+
+    if (res.code !== 200 || !res.data?.sessionId) {
+      throw new Error(res.message || "发起聊天失败");
+    }
+
+    await navigateTo(`/chat/${res.data.sessionId}`);
+  } catch (error) {
+    chatError.value = error instanceof Error ? error.message : "发起聊天失败";
+  } finally {
+    setChatLoading(keyOrderId, keyItemId, false);
   }
 }
 
@@ -146,6 +223,13 @@ onMounted(() => {
           {{ formatPrice(totalSpent) }}
         </div>
       </UCard>
+    </div>
+
+    <div
+      v-if="chatError"
+      class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600"
+    >
+      {{ chatError }}
     </div>
 
     <UCard class="rounded-2xl shadow-sm">
@@ -212,11 +296,21 @@ onMounted(() => {
                 <div class="flex items-start justify-between gap-3">
                   <div class="min-w-0">
                     <p class="truncate font-medium">{{ item.snackName }}</p>
+
                     <p class="mt-1 text-sm text-muted">
                       单价 {{ formatPrice(item.price) }}
                     </p>
+
                     <p class="mt-1 text-sm text-muted">
                       数量 {{ item.quantity }}
+                    </p>
+
+                    <p class="mt-1 text-sm text-muted">
+                      卖家
+                      {{
+                        item.sellerUsername ||
+                        (item.sellerId ? `用户 ${item.sellerId}` : "-")
+                      }}
                     </p>
                   </div>
 
@@ -226,6 +320,17 @@ onMounted(() => {
                       {{ formatPrice(item.subtotal) }}
                     </p>
                   </div>
+                </div>
+
+                <div class="mt-3 flex justify-end">
+                  <UButton
+                    icon="i-lucide-messages-square"
+                    size="sm"
+                    :loading="isChatLoading(order.id, item.id)"
+                    @click="startChat(order, item)"
+                  >
+                    发起聊天
+                  </UButton>
                 </div>
               </div>
             </div>

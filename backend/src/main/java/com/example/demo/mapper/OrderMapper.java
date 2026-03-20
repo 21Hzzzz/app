@@ -24,10 +24,13 @@ public interface OrderMapper extends BaseMapper<Order> {
                 s.image_url AS snackImage,
                 oi.quantity AS quantity,
                 oi.price AS price,
-                oi.subtotal AS subtotal
+                oi.subtotal AS subtotal,
+                s.seller_id AS sellerId,
+                seller.username AS sellerUsername
             FROM orders o
             LEFT JOIN order_item oi ON o.id = oi.order_id
             LEFT JOIN snack s ON oi.snack_id = s.id
+            LEFT JOIN user seller ON s.seller_id = seller.id
             WHERE o.buyer_id = #{buyerId}
             ORDER BY o.create_time DESC, o.id DESC, oi.id ASC
             """)

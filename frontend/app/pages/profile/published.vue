@@ -367,7 +367,7 @@ onMounted(() => {
           <img
             :src="snack.image || getDefaultImage(snack.id)"
             :alt="snack.name"
-            class="h-44 w-full object-cover"
+            class="h-44 w-full rounded-lg object-cover"
           />
 
           <div class="space-y-4 p-4">

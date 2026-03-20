@@ -11,6 +11,8 @@ public class BoughtOrderItemVO {
     private Integer quantity;
     private BigDecimal price;
     private BigDecimal subtotal;
+    private Long sellerId;
+    private String sellerUsername;
 
     public Long getId() {
         return id;
@@ -66,5 +68,21 @@ public class BoughtOrderItemVO {
 
     public void setSubtotal(BigDecimal subtotal) {
         this.subtotal = subtotal;
+    }
+
+    public Long getSellerId() {
+        return sellerId;
+    }
+
+    public void setSellerId(Long sellerId) {
+        this.sellerId = sellerId;
+    }
+
+    public String getSellerUsername() {
+        return sellerUsername;
+    }
+
+    public void setSellerUsername(String sellerUsername) {
+        this.sellerUsername = sellerUsername;
     }
 }

@@ -151,6 +151,8 @@ public class OrderServiceImpl implements OrderService {
                 item.setQuantity(row.getQuantity());
                 item.setPrice(row.getPrice());
                 item.setSubtotal(row.getSubtotal());
+                item.setSellerId(row.getSellerId());
+                item.setSellerUsername(row.getSellerUsername());
                 order.getItems().add(item);
             }
         }
