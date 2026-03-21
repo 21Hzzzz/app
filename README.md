@@ -1,8 +1,7 @@
 # 前端
 
 cd frontend
-pnpm add zod
-pnpm add -D @types/node
+pnpm install
 pnpm run dev
 
 # 后端
