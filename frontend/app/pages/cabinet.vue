@@ -50,6 +50,7 @@ type CreateOrderResult = {
 
 const api = useApi();
 const { user } = useAuth();
+const resolveImageUrl = useImageUrl();
 
 const snacks = ref<Snack[]>([]);
 const cart = ref<CartItem[]>([]);
@@ -76,7 +77,7 @@ function mapSnack(dto: SnackDTO): Snack {
     price: Number(dto.price),
     stock: dto.stock,
     description: dto.description ?? "",
-    image: dto.image || getDefaultImage(dto.id),
+    image: resolveImageUrl(dto.image, getDefaultImage(dto.id)),
   };
 }
 

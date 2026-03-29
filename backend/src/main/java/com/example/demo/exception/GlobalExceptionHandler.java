@@ -4,6 +4,8 @@ import com.example.demo.dto.Result;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.MultipartException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -14,6 +16,21 @@ public class GlobalExceptionHandler {
                 .getFieldError()
                 .getDefaultMessage();
         return Result.fail(message);
+    }
+
+    @ExceptionHandler(FileUploadException.class)
+    public Result<String> handleFileUploadException(FileUploadException e) {
+        return Result.fail(e.getMessage());
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public Result<String> handleMaxUploadSizeExceededException(MaxUploadSizeExceededException e) {
+        return Result.fail("图片大小不能超过 5MB");
+    }
+
+    @ExceptionHandler(MultipartException.class)
+    public Result<String> handleMultipartException(MultipartException e) {
+        return Result.fail("图片上传请求无效");
     }
 
     @ExceptionHandler(Exception.class)

@@ -172,6 +172,24 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    public void markSessionRead(Long sessionId, Long userId) {
+        ChatSessionRowDTO session = getOwnedSessionRow(sessionId, userId);
+        Long latestMessageId = chatMessageMapper.selectLatestMessageIdBySessionId(sessionId);
+
+        if (latestMessageId == null) {
+            return;
+        }
+
+        if (userId.equals(session.getBuyerId())) {
+            chatSessionMapper.updateBuyerLastReadMessageId(sessionId, userId, latestMessageId);
+            return;
+        }
+
+        chatSessionMapper.updateSellerLastReadMessageId(sessionId, userId, latestMessageId);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public void sendMessage(SendChatMessageRequest request) {
         ChatSessionRowDTO session = getOwnedSessionRow(request.getSessionId(), request.getSenderId());
 
@@ -244,8 +262,11 @@ public class ChatServiceImpl implements ChatService {
             session.setBuyerUsername(row.getBuyerUsername());
             session.setSellerId(row.getSellerId());
             session.setSellerUsername(row.getSellerUsername());
+            session.setLatestMessageId(row.getLatestMessageId());
+            session.setLatestMessageSenderId(row.getLatestMessageSenderId());
             session.setLatestMessage(row.getLatestMessage());
             session.setLatestMessageTime(row.getLatestMessageTime());
+            session.setUnreadCount(row.getUnreadCount());
             session.setCreateTime(row.getCreateTime());
             response.add(session);
         }

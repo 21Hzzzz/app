@@ -10,8 +10,11 @@ public class ChatSessionVO {
     private String buyerUsername;
     private Long sellerId;
     private String sellerUsername;
+    private Long latestMessageId;
+    private Long latestMessageSenderId;
     private String latestMessage;
     private LocalDateTime latestMessageTime;
+    private Long unreadCount;
     private LocalDateTime createTime;
 
     public Long getId() {
@@ -62,6 +65,22 @@ public class ChatSessionVO {
         this.sellerUsername = sellerUsername;
     }
 
+    public Long getLatestMessageId() {
+        return latestMessageId;
+    }
+
+    public void setLatestMessageId(Long latestMessageId) {
+        this.latestMessageId = latestMessageId;
+    }
+
+    public Long getLatestMessageSenderId() {
+        return latestMessageSenderId;
+    }
+
+    public void setLatestMessageSenderId(Long latestMessageSenderId) {
+        this.latestMessageSenderId = latestMessageSenderId;
+    }
+
     public String getLatestMessage() {
         return latestMessage;
     }
@@ -76,6 +95,14 @@ public class ChatSessionVO {
 
     public void setLatestMessageTime(LocalDateTime latestMessageTime) {
         this.latestMessageTime = latestMessageTime;
+    }
+
+    public Long getUnreadCount() {
+        return unreadCount;
+    }
+
+    public void setUnreadCount(Long unreadCount) {
+        this.unreadCount = unreadCount;
     }
 
     public LocalDateTime getCreateTime() {

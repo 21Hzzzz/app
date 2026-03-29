@@ -25,6 +25,7 @@ type ApiResponse<T> = {
 };
 
 const api = useApi();
+const resolveImageUrl = useImageUrl();
 
 const loading = ref(false);
 const loadError = ref("");
@@ -226,7 +227,7 @@ onMounted(() => {
           :ui="{ body: 'p-0' }"
         >
           <img
-            :src="snack.image || getDefaultImage(snack.id)"
+            :src="resolveImageUrl(snack.image, getDefaultImage(snack.id))"
             :alt="snack.name"
             class="h-44 w-full object-cover"
           />

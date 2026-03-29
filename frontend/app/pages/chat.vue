@@ -1,22 +1,44 @@
 <script setup lang="ts">
 import type { NavigationMenuItem } from "@nuxt/ui";
 
-const items = computed<NavigationMenuItem[][]>(() => [
+type ChatNavigationMenuItem = NavigationMenuItem & {
+  badge?: string | number;
+};
+
+const {
+  totalUnreadMessageCount,
+  buyerTotalUnreadMessageCount,
+  sellerTotalUnreadMessageCount,
+} = useChatUnread();
+
+const items = computed<ChatNavigationMenuItem[][]>(() => [
   [
     {
       label: "全部会话",
       icon: "i-lucide-messages-square",
       to: "/chat/all",
+      badge:
+        totalUnreadMessageCount.value > 0
+          ? String(totalUnreadMessageCount.value)
+          : undefined,
     },
     {
       label: "我发起的",
       icon: "i-lucide-message-circle-more",
       to: "/chat/buyer",
+      badge:
+        buyerTotalUnreadMessageCount.value > 0
+          ? String(buyerTotalUnreadMessageCount.value)
+          : undefined,
     },
     {
       label: "收到的咨询",
       icon: "i-lucide-message-square-reply",
       to: "/chat/seller",
+      badge:
+        sellerTotalUnreadMessageCount.value > 0
+          ? String(sellerTotalUnreadMessageCount.value)
+          : undefined,
     },
   ],
 ]);
@@ -31,7 +53,9 @@ const items = computed<NavigationMenuItem[][]>(() => [
         >
           <div class="border-b border-default px-4 py-4">
             <h2 class="text-base font-semibold">聊天中心</h2>
-            <p class="mt-1 text-sm text-muted">查看买卖双方的会话与消息记录</p>
+            <p class="mt-1 text-sm text-muted">
+              查看哪些会话未读，以及每个会话还有多少条新消息
+            </p>
           </div>
 
           <div class="p-3">

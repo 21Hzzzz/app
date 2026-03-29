@@ -33,6 +33,7 @@ type SendMessageRequest = {
 const route = useRoute();
 const api = useApi();
 const { user } = useAuth();
+const { markSessionRead } = useChatUnread();
 
 const sessionDetail = ref<ChatSessionDetail | null>(null);
 const messages = ref<ChatMessage[]>([]);
@@ -72,6 +73,11 @@ function formatTime(time?: string | null) {
 
 function clearSendError() {
   sendError.value = "";
+}
+
+function getLatestMessageId(messageList: ChatMessage[] = messages.value) {
+  const latestMessage = messageList[messageList.length - 1];
+  return latestMessage?.id ?? null;
 }
 
 function isMine(message: ChatMessage) {
@@ -212,6 +218,7 @@ async function fetchMessages() {
   }
 
   messages.value = res.data || [];
+  await markSessionRead(sessionId.value, getLatestMessageId(messages.value));
 }
 
 async function refreshMessagesSilently() {
@@ -223,12 +230,12 @@ async function refreshMessagesSilently() {
   try {
     const shouldScroll = isNearBottom();
     const prevLength = messages.value.length;
-    const prevLastId = prevLength ? messages.value[prevLength - 1].id : 0;
+    const prevLastId = getLatestMessageId(messages.value) ?? 0;
 
     await fetchMessages();
 
     const nextLength = messages.value.length;
-    const nextLastId = nextLength ? messages.value[nextLength - 1].id : 0;
+    const nextLastId = getLatestMessageId(messages.value) ?? 0;
 
     if (
       shouldScroll ||

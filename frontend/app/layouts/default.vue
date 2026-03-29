@@ -1,7 +1,14 @@
 <script lang="ts" setup>
 import type { NavigationMenuItem } from "@nuxt/ui";
 
-const items = computed<NavigationMenuItem[]>(() => [
+type AppNavigationMenuItem = NavigationMenuItem & {
+  chip?: boolean | { color?: "error"; inset?: boolean; show?: boolean };
+};
+
+const { username, logout, user } = useAuth();
+const { hasUnread, refresh, startPolling, stopPolling } = useChatUnread();
+
+const items = computed<AppNavigationMenuItem[]>(() => [
   {
     label: "首页",
     to: "/",
@@ -21,6 +28,11 @@ const items = computed<NavigationMenuItem[]>(() => [
     label: "消息",
     to: "/chat/all",
     icon: "i-lucide-message-circle",
+    chip: {
+      color: "error",
+      inset: true,
+      show: hasUnread.value,
+    },
   },
   {
     label: "后台",
@@ -29,12 +41,32 @@ const items = computed<NavigationMenuItem[]>(() => [
   },
 ]);
 
-const { username, logout } = useAuth();
-
 const handleLogout = async () => {
   logout();
   await navigateTo("/login");
 };
+
+watch(
+  () => user.value?.id ?? null,
+  (userId) => {
+    if (!import.meta.client) {
+      return;
+    }
+
+    if (!userId) {
+      stopPolling();
+      void refresh();
+      return;
+    }
+
+    startPolling();
+  },
+  { immediate: true },
+);
+
+onBeforeUnmount(() => {
+  stopPolling();
+});
 </script>
 
 <template>

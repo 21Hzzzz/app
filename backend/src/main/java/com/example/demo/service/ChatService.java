@@ -22,5 +22,7 @@ public interface ChatService {
 
     List<ChatMessageVO> getMessages(Long sessionId, Long userId);
 
+    void markSessionRead(Long sessionId, Long userId);
+
     void sendMessage(SendChatMessageRequest request);
 }

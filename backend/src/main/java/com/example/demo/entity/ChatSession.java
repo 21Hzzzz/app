@@ -22,6 +22,12 @@ public class ChatSession {
     @TableField("seller_id")
     private Long sellerId;
 
+    @TableField("buyer_last_read_message_id")
+    private Long buyerLastReadMessageId;
+
+    @TableField("seller_last_read_message_id")
+    private Long sellerLastReadMessageId;
+
     @TableField("create_time")
     private LocalDateTime createTime;
 
@@ -55,6 +61,22 @@ public class ChatSession {
 
     public void setSellerId(Long sellerId) {
         this.sellerId = sellerId;
+    }
+
+    public Long getBuyerLastReadMessageId() {
+        return buyerLastReadMessageId;
+    }
+
+    public void setBuyerLastReadMessageId(Long buyerLastReadMessageId) {
+        this.buyerLastReadMessageId = buyerLastReadMessageId;
+    }
+
+    public Long getSellerLastReadMessageId() {
+        return sellerLastReadMessageId;
+    }
+
+    public void setSellerLastReadMessageId(Long sellerLastReadMessageId) {
+        this.sellerLastReadMessageId = sellerLastReadMessageId;
     }
 
     public LocalDateTime getCreateTime() {

@@ -20,6 +20,7 @@ type ApiResponse<T> = {
 
 const api = useApi();
 const { user } = useAuth();
+const resolveImageUrl = useImageUrl();
 
 const loading = ref(false);
 const loadError = ref("");
@@ -172,7 +173,7 @@ onMounted(() => {
         >
           <div class="flex gap-4">
             <img
-              :src="record.snackImage || getDefaultImage(record.snackId)"
+              :src="resolveImageUrl(record.snackImage, getDefaultImage(record.snackId))"
               :alt="record.snackName"
               class="h-24 w-32 rounded-xl object-cover"
             />

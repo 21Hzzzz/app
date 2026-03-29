@@ -43,4 +43,4 @@ out/
 *.war
 *.nar
 .mvn/timing.properties
-
+backend/uploads/

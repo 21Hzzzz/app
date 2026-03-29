@@ -22,14 +22,33 @@ type ApiResponse<T> = {
   data: T;
 };
 
+type UploadImageResult = {
+  url: string;
+};
+
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
+const ACCEPTED_IMAGE_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/jpg",
+];
+
 const api = useApi();
 const { user } = useAuth();
+const resolveImageUrl = useImageUrl();
 
 const loading = ref(false);
 const submitting = ref(false);
+const uploading = ref(false);
 const offShelfLoadingId = ref<number | null>(null);
 const loadError = ref("");
 const submitError = ref("");
+const uploadError = ref("");
+const uploadedUrl = ref("");
+const selectedFile = ref<File | null>(null);
+
+let uploadRequestId = 0;
 
 const schema = z.object({
   name: z
@@ -43,10 +62,7 @@ const schema = z.object({
     .max(255, "描述不能超过 255 个字符")
     .optional()
     .default(""),
-  image: z
-    .union([z.string().url("图片地址格式不正确"), z.literal("")])
-    .optional()
-    .default(""),
+  image: z.string().max(255, "图片地址不能超过 255 个字符").optional().default(""),
 });
 
 type Schema = z.infer<typeof schema>;
@@ -103,6 +119,78 @@ function getStatusColor(status: SnackStatus) {
       return "neutral";
   }
 }
+
+function resetUploadedImage() {
+  uploadRequestId++;
+  uploading.value = false;
+  uploadError.value = "";
+  uploadedUrl.value = "";
+  state.image = "";
+}
+
+function validateSelectedFile(file: File) {
+  if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
+    throw new Error("仅支持 jpg、jpeg、png、webp 格式图片");
+  }
+
+  if (file.size > MAX_IMAGE_SIZE) {
+    throw new Error("图片大小不能超过 5MB");
+  }
+}
+
+async function uploadImage(file: File) {
+  const requestId = ++uploadRequestId;
+
+  uploading.value = true;
+  uploadError.value = "";
+  uploadedUrl.value = "";
+  state.image = "";
+
+  try {
+    validateSelectedFile(file);
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const res = await api<ApiResponse<UploadImageResult>>("/api/uploads/images", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (requestId !== uploadRequestId) {
+      return;
+    }
+
+    if (res.code !== 200 || !res.data?.url) {
+      throw new Error(res.message || "图片上传失败");
+    }
+
+    uploadedUrl.value = res.data.url;
+    state.image = res.data.url;
+  } catch (error) {
+    if (requestId !== uploadRequestId) {
+      return;
+    }
+
+    uploadedUrl.value = "";
+    state.image = "";
+    uploadError.value =
+      error instanceof Error ? error.message : "图片上传失败";
+  } finally {
+    if (requestId === uploadRequestId) {
+      uploading.value = false;
+    }
+  }
+}
+
+watch(selectedFile, (file) => {
+  if (!(file instanceof File)) {
+    resetUploadedImage();
+    return;
+  }
+
+  void uploadImage(file);
+});
 
 async function fetchMySnacks() {
   if (!user.value) {
@@ -168,6 +256,9 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     state.stock = "";
     state.description = "";
     state.image = "";
+    selectedFile.value = null;
+    uploadError.value = "";
+    uploadedUrl.value = "";
 
     await fetchMySnacks();
     alert("发布成功");
@@ -225,7 +316,6 @@ onMounted(() => {
 
 <template>
   <div class="space-y-6">
-    <!-- 发布表单 -->
     <UCard class="rounded-2xl shadow-sm">
       <template #header>
         <div>
@@ -254,11 +344,61 @@ onMounted(() => {
             <UInput v-model="state.name" placeholder="例如：乐事薯片" />
           </UFormField>
 
-          <UFormField label="图片地址" name="image">
-            <UInput
-              v-model="state.image"
-              placeholder="可选，填写图片 URL；不填则使用默认图"
-            />
+          <UFormField label="图片上传" name="image">
+            <div class="space-y-3">
+              <UFileUpload
+                v-model="selectedFile"
+                accept="image/jpeg,image/png,image/webp"
+                icon="i-lucide-image-plus"
+                label="拖拽或点击上传零食图片"
+                description="支持 jpg、jpeg、png、webp，大小不超过 5MB"
+                :disabled="uploading || submitting"
+                :preview="false"
+                class="min-h-44 w-full"
+              />
+
+              <UAlert
+                v-if="uploadError"
+                color="error"
+                variant="soft"
+                title="图片上传失败"
+                :description="uploadError"
+              />
+
+              <div
+                v-else-if="uploadedUrl"
+                class="rounded-xl border border-default bg-muted/40 p-3"
+              >
+                <div class="flex items-center justify-between gap-3">
+                  <div>
+                    <p class="text-sm font-medium">图片已上传</p>
+                    <p class="mt-1 text-xs text-muted">
+                      发布后将使用这张图片
+                    </p>
+                  </div>
+
+                  <UButton
+                    color="neutral"
+                    variant="soft"
+                    icon="i-lucide-trash-2"
+                    :disabled="uploading || submitting"
+                    @click="selectedFile = null"
+                  >
+                    清除
+                  </UButton>
+                </div>
+
+                <img
+                  :src="resolveImageUrl(uploadedUrl)"
+                  alt="已上传图片预览"
+                  class="mt-3 h-36 w-full rounded-xl object-cover"
+                />
+              </div>
+
+              <p v-else-if="uploading" class="text-sm text-muted">
+                正在上传图片...
+              </p>
+            </div>
           </UFormField>
 
           <UFormField label="价格" name="price" required>
@@ -291,6 +431,7 @@ onMounted(() => {
             type="submit"
             icon="i-lucide-package-plus"
             :loading="submitting"
+            :disabled="uploading"
           >
             发布零食
           </UButton>
@@ -298,7 +439,6 @@ onMounted(() => {
       </UForm>
     </UCard>
 
-    <!-- 数据概览 -->
     <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
       <UCard class="rounded-2xl shadow-sm">
         <div class="text-sm text-muted">在售商品</div>
@@ -316,7 +456,6 @@ onMounted(() => {
       </UCard>
     </div>
 
-    <!-- 我发布的列表 -->
     <UCard class="rounded-2xl shadow-sm">
       <template #header>
         <div class="flex items-center justify-between gap-4">
@@ -365,7 +504,7 @@ onMounted(() => {
           :ui="{ body: 'p-0' }"
         >
           <img
-            :src="snack.image || getDefaultImage(snack.id)"
+            :src="resolveImageUrl(snack.image, getDefaultImage(snack.id))"
             :alt="snack.name"
             class="h-44 w-full rounded-lg object-cover"
           />

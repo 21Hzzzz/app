@@ -37,6 +37,7 @@ type CreateChatSessionResult = {
 
 const api = useApi();
 const { user } = useAuth();
+const resolveImageUrl = useImageUrl();
 
 const loading = ref(false);
 const loadError = ref("");
@@ -287,7 +288,7 @@ onMounted(() => {
               class="flex gap-4 rounded-xl border border-default p-3"
             >
               <img
-                :src="item.snackImage || getDefaultImage(item.snackId)"
+                :src="resolveImageUrl(item.snackImage, getDefaultImage(item.snackId))"
                 :alt="item.snackName"
                 class="h-20 w-28 rounded-lg object-cover"
               />

@@ -26,4 +26,13 @@ public interface ChatMessageMapper extends BaseMapper<ChatMessage> {
             ORDER BY cm.create_time ASC, cm.id ASC
             """)
     List<ChatMessageRowDTO> selectMessageRowsBySessionId(@Param("sessionId") Long sessionId);
+
+    @Select("""
+            SELECT cm.id
+            FROM chat_message cm
+            WHERE cm.session_id = #{sessionId}
+            ORDER BY cm.id DESC
+            LIMIT 1
+            """)
+    Long selectLatestMessageIdBySessionId(@Param("sessionId") Long sessionId);
 }

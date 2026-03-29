@@ -1,6 +1,7 @@
 package com.example.demo.controller;
 
 import com.example.demo.dto.CreateChatSessionRequest;
+import com.example.demo.dto.MarkChatSessionReadRequest;
 import com.example.demo.dto.Result;
 import com.example.demo.dto.SendChatMessageRequest;
 import com.example.demo.service.ChatService;
@@ -33,6 +34,15 @@ public class ChatController {
     public Result<CreateChatSessionVO> createSession(@Valid @RequestBody CreateChatSessionRequest request) {
         CreateChatSessionVO response = chatService.createSession(request);
         return Result.success("success", response);
+    }
+
+    @PostMapping("/sessions/{sessionId}/read")
+    public Result<Void> markSessionRead(
+            @PathVariable Long sessionId,
+            @Valid @RequestBody MarkChatSessionReadRequest request
+    ) {
+        chatService.markSessionRead(sessionId, request.getUserId());
+        return Result.success("success", null);
     }
 
     @GetMapping("/sessions/all")
