@@ -30,6 +30,8 @@ type SendMessageRequest = {
   content: string;
 };
 
+const MAX_MESSAGE_LENGTH = 1000;
+
 const route = useRoute();
 const api = useApi();
 const { user } = useAuth();
@@ -270,7 +272,14 @@ async function fetchChatDetail() {
 }
 
 const canSend = computed(() => {
-  return !!messageText.value.trim() && !!user.value && !!sessionDetail.value;
+  const trimmedMessage = messageText.value.trim();
+
+  return (
+    !!trimmedMessage &&
+    trimmedMessage.length <= MAX_MESSAGE_LENGTH &&
+    !!user.value &&
+    !!sessionDetail.value
+  );
 });
 
 async function sendMessage() {
@@ -285,6 +294,11 @@ async function sendMessage() {
 
   if (!content) {
     sendError.value = "消息内容不能为空";
+    return;
+  }
+
+  if (content.length > MAX_MESSAGE_LENGTH) {
+    sendError.value = `消息内容不能超过 ${MAX_MESSAGE_LENGTH} 个字符`;
     return;
   }
 
@@ -477,6 +491,7 @@ onBeforeUnmount(() => {
           <UTextarea
             v-model="messageText"
             :rows="5"
+            :maxlength="MAX_MESSAGE_LENGTH"
             autoresize
             placeholder="请输入消息内容"
             @input="clearSendError"

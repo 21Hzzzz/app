@@ -6,6 +6,7 @@ public class AdminUserVO {
 
     private Long id;
     private String username;
+    private String phone;
     private String role;
     private LocalDateTime createTime;
 
@@ -23,6 +24,14 @@ public class AdminUserVO {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
 
     public String getRole() {

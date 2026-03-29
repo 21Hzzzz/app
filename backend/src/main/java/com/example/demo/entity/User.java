@@ -13,6 +13,8 @@ public class User {
 
     private String username;
 
+    private String phone;
+
     @TableField("password_hash")
     private String passwordHash;
 
@@ -32,6 +34,14 @@ public class User {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
 
     public String getPasswordHash() {

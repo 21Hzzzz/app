@@ -64,6 +64,7 @@ public class AdminUserServiceImpl implements AdminUserService {
         AdminUserVO response = new AdminUserVO();
         response.setId(row.getId());
         response.setUsername(row.getUsername());
+        response.setPhone(row.getPhone());
         response.setRole(row.getRole());
         response.setCreateTime(row.getCreateTime());
         return response;

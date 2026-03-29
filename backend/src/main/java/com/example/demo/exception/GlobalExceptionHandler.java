@@ -12,14 +12,19 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public Result<String> handleValidException(MethodArgumentNotValidException e) {
-        String message = e.getBindingResult()
-                .getFieldError()
-                .getDefaultMessage();
+        String message = e.getBindingResult().getFieldError() == null
+                ? "请求参数校验失败"
+                : e.getBindingResult().getFieldError().getDefaultMessage();
         return Result.fail(message);
     }
 
     @ExceptionHandler(FileUploadException.class)
     public Result<String> handleFileUploadException(FileUploadException e) {
+        return Result.fail(e.getMessage());
+    }
+
+    @ExceptionHandler(SmsVerificationException.class)
+    public Result<String> handleSmsVerificationException(SmsVerificationException e) {
         return Result.fail(e.getMessage());
     }
 

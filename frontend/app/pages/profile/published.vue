@@ -55,7 +55,7 @@ const schema = z.object({
     .string()
     .min(1, "请输入零食名称")
     .max(100, "零食名称不能超过 100 个字符"),
-  price: z.coerce.number().gt(0, "价格必须大于 0"),
+  price: z.coerce.number().min(0.01, "价格必须大于或等于 0.01"),
   stock: z.coerce.number().int("库存必须是整数").min(1, "库存至少为 1"),
   description: z
     .string()

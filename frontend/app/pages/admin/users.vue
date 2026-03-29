@@ -1,6 +1,6 @@
 <script setup lang="ts">
 definePageMeta({
-  middleware: "admin",
+  middleware: "admin"
 });
 
 type UserRole = "user" | "admin";
@@ -8,6 +8,7 @@ type UserRole = "user" | "admin";
 type AdminUser = {
   id: number;
   username: string;
+  phone: string | null;
   role: UserRole;
   createTime: string;
 };
@@ -26,16 +27,18 @@ const users = ref<AdminUser[]>([]);
 const deletingUserId = ref<number | null>(null);
 
 function formatTime(time: string) {
-  if (!time) return "-";
+  if (!time) {
+    return "-";
+  }
 
-  const d = new Date(time);
+  const date = new Date(time);
 
-  if (Number.isNaN(d.getTime())) {
+  if (Number.isNaN(date.getTime())) {
     return time;
   }
 
-  return d.toLocaleString("zh-CN", {
-    hour12: false,
+  return date.toLocaleString("zh-CN", {
+    hour12: false
   });
 }
 
@@ -47,13 +50,17 @@ function getRoleColor(role: UserRole) {
   return role === "admin" ? "primary" : "neutral";
 }
 
+function getPhoneLabel(phone: string | null) {
+  return phone?.trim() ? phone : "未绑定";
+}
+
 async function fetchAdminUsers() {
   loading.value = true;
   loadError.value = "";
 
   try {
     const res = await api<ApiResponse<AdminUser[]>>("/api/admin/users", {
-      method: "GET",
+      method: "GET"
     });
 
     if (res.code !== 200) {
@@ -71,19 +78,23 @@ async function fetchAdminUsers() {
 }
 
 async function handleDeleteUser(user: AdminUser) {
-  if (user.role !== "user") return;
+  if (user.role !== "user") {
+    return;
+  }
 
   const confirmed = window.confirm(
-    `确定要删除用户“${user.username}”吗？此操作不可恢复。`,
+    `确定要删除用户“${user.username}”吗？此操作不可恢复。`
   );
 
-  if (!confirmed) return;
+  if (!confirmed) {
+    return;
+  }
 
   deletingUserId.value = user.id;
 
   try {
     const res = await api<ApiResponse<null>>(`/api/admin/users/${user.id}`, {
-      method: "DELETE",
+      method: "DELETE"
     });
 
     if (res.code !== 200) {
@@ -99,13 +110,11 @@ async function handleDeleteUser(user: AdminUser) {
 }
 
 const totalCount = computed(() => users.value.length);
-
 const adminCount = computed(
-  () => users.value.filter((item) => item.role === "admin").length,
+  () => users.value.filter((item) => item.role === "admin").length
 );
-
 const userCount = computed(
-  () => users.value.filter((item) => item.role === "user").length,
+  () => users.value.filter((item) => item.role === "user").length
 );
 
 onMounted(() => {
@@ -118,7 +127,7 @@ onMounted(() => {
     <div class="flex items-center justify-between gap-4">
       <div>
         <h1 class="text-2xl font-bold">用户管理</h1>
-        <p class="mt-2 text-sm text-muted">查看系统中的全部注册用户</p>
+        <p class="mt-2 text-sm text-muted">查看系统中的全部注册用户和绑定手机号</p>
       </div>
 
       <UButton
@@ -152,7 +161,7 @@ onMounted(() => {
       <template #header>
         <div>
           <h2 class="text-lg font-semibold">用户列表</h2>
-          <p class="mt-1 text-sm text-muted">按注册时间倒序展示全部用户</p>
+          <p class="mt-1 text-sm text-muted">按注册时间倒序展示账号、手机号和角色</p>
         </div>
       </template>
 
@@ -165,9 +174,9 @@ onMounted(() => {
 
       <div
         v-else-if="loadError"
-        class="rounded-xl border border-red-200 bg-red-50 px-4 py-10 text-center"
+        class="rounded-xl border border-error/30 bg-error/10 px-4 py-10 text-center"
       >
-        <p class="text-sm text-red-600">{{ loadError }}</p>
+        <p class="text-sm text-error">{{ loadError }}</p>
       </div>
 
       <div
@@ -197,9 +206,9 @@ onMounted(() => {
 
             <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div class="rounded-xl bg-muted/50 px-3 py-2">
-                <div class="text-sm text-muted">角色</div>
+                <div class="text-sm text-muted">手机号</div>
                 <div class="mt-1 font-semibold">
-                  {{ getRoleLabel(item.role) }}
+                  {{ getPhoneLabel(item.phone) }}
                 </div>
               </div>
 

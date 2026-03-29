@@ -15,6 +15,7 @@ public interface AdminUserMapper {
             SELECT
                 id AS id,
                 username AS username,
+                phone AS phone,
                 role AS role,
                 create_time AS createTime
             FROM user

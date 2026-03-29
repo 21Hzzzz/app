@@ -4,7 +4,9 @@ import com.example.demo.dto.LoginRequest;
 import com.example.demo.dto.LoginResponse;
 import com.example.demo.dto.RegisterRequest;
 import com.example.demo.dto.Result;
+import com.example.demo.dto.SendRegisterSmsCodeRequest;
 import com.example.demo.service.AuthService;
+import com.example.demo.vo.SendRegisterSmsCodeVO;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,6 +27,12 @@ public class AuthController {
     public Result<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
         LoginResponse response = authService.login(request);
         return Result.success("登录成功", response);
+    }
+
+    @PostMapping("/register/sms-code")
+    public Result<SendRegisterSmsCodeVO> sendRegisterSmsCode(@Valid @RequestBody SendRegisterSmsCodeRequest request) {
+        SendRegisterSmsCodeVO response = authService.sendRegisterSmsCode(request);
+        return Result.success("验证码发送成功", response);
     }
 
     @PostMapping("/register")

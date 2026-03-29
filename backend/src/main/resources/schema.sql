@@ -1,3 +1,39 @@
+SET @user_phone_exists := (
+    SELECT COUNT(*)
+    FROM information_schema.columns
+    WHERE table_schema = DATABASE()
+      AND table_name = 'user'
+      AND column_name = 'phone'
+);
+
+SET @user_phone_sql := IF(
+    @user_phone_exists = 0,
+    'ALTER TABLE user ADD COLUMN phone VARCHAR(20) NULL AFTER username',
+    'SELECT 1'
+);
+
+PREPARE stmt FROM @user_phone_sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+SET @user_phone_index_exists := (
+    SELECT COUNT(*)
+    FROM information_schema.statistics
+    WHERE table_schema = DATABASE()
+      AND table_name = 'user'
+      AND index_name = 'uk_user_phone'
+);
+
+SET @user_phone_index_sql := IF(
+    @user_phone_index_exists = 0,
+    'CREATE UNIQUE INDEX uk_user_phone ON user (phone)',
+    'SELECT 1'
+);
+
+PREPARE stmt FROM @user_phone_index_sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
 CREATE TABLE IF NOT EXISTS chat_session (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     order_id BIGINT NOT NULL,
